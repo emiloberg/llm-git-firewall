@@ -86,9 +86,9 @@ rules:
     - "git push origin main"
     - "git push origin master"
     - "git push origin develop"
-    - "git push * --force"
-    - "git push * -f"
-    - "git push * --force-with-lease"
+    - "*--force*"
+    - "* -f"
+    - "* -f *"
 `
 
 func createDefaultConfig(path string) error {
