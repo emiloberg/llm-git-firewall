@@ -23,10 +23,13 @@ brew tap emiloberg/tap
 brew install llm-git-firewall
 ```
 
-A default config is created automatically at `~/.llm-git-firewall.yaml`. Edit the `root` field to point to your shared directory, then start the service:
+Then create a default config and edit it:
 
 ```
-# Edit config first
+# Create default config
+llm-git-firewall --init
+
+# Edit config — set 'root' to your shared directory
 vim ~/.llm-git-firewall.yaml
 
 # Start as a background service (survives reboots)

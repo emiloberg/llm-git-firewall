@@ -11,15 +11,6 @@ class LlmGitFirewall < Formula
     system "go", "build", *std_go_args(ldflags: "-s -w"), "./cmd/llm-git-firewall"
   end
 
-  def post_install
-    config_path = Pathname.new(Dir.home)/".llm-git-firewall.yaml"
-    unless config_path.exist?
-      system bin/"llm-git-firewall", "--init"
-      ohai "Default config created at #{config_path}"
-      ohai "Edit the 'root' field to point to your shared directory before starting the service."
-    end
-  end
-
   service do
     run [opt_bin/"llm-git-firewall", "--config", Pathname.new(Dir.home)/".llm-git-firewall.yaml"]
     keep_alive true
@@ -30,14 +21,19 @@ class LlmGitFirewall < Formula
 
   def caveats
     <<~EOS
-      To use llm-git-firewall as a service:
+      To get started:
 
-        1. Edit ~/.llm-git-firewall.yaml and set 'root' to your shared directory
-        2. Start the service:
+        1. Create a default config:
+
+           llm-git-firewall --init
+
+        2. Edit ~/.llm-git-firewall.yaml and set 'root' to your shared directory
+
+        3. Start the service:
 
            brew services start llm-git-firewall
 
-        3. Check logs at: #{var}/log/llm-git-firewall.log
+        4. Check logs at: #{var}/log/llm-git-firewall.log
     EOS
   end
 
