@@ -23,10 +23,23 @@ brew tap git-llm-guard/tap
 brew install git-llm-guard
 ```
 
-To run as a background service:
+A default config is created automatically at `~/.git-llm-guard.yaml`. Edit the `root` field to point to your shared directory, then start the service:
 
 ```
+# Edit config first
+vim ~/.git-llm-guard.yaml
+
+# Start as a background service (survives reboots)
 brew services start git-llm-guard
+
+# Check status
+brew services info git-llm-guard
+
+# View logs
+tail -f /usr/local/var/log/git-llm-guard.log
+
+# Stop
+brew services stop git-llm-guard
 ```
 
 ### Download a release
