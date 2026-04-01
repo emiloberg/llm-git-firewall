@@ -81,7 +81,7 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 
 	// Check if this is a new file in a pending directory
 	dir := filepath.Dir(path)
-	if filepath.Base(dir) == "pending" && strings.Contains(dir, ".git-llm-guard") {
+	if filepath.Base(dir) == "pending" && strings.Contains(dir, ".llm-git-firewall") {
 		info, err := os.Stat(path)
 		if err != nil || info.IsDir() {
 			return
@@ -110,14 +110,14 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 		w.fsw.Add(path)
 	}
 
-	// If this creates a .git-llm-guard/pending dir, watch it
-	pendingDir := filepath.Join(path, ".git-llm-guard", "pending")
+	// If this creates a .llm-git-firewall/pending dir, watch it
+	pendingDir := filepath.Join(path, ".llm-git-firewall", "pending")
 	if info, err := os.Stat(pendingDir); err == nil && info.IsDir() {
 		w.fsw.Add(pendingDir)
 	}
 
-	// If this IS a pending dir inside .git-llm-guard, watch it
-	if filepath.Base(path) == "pending" && strings.Contains(path, ".git-llm-guard") {
+	// If this IS a pending dir inside .llm-git-firewall, watch it
+	if filepath.Base(path) == "pending" && strings.Contains(path, ".llm-git-firewall") {
 		w.fsw.Add(path)
 	}
 }
@@ -157,7 +157,7 @@ func ScanForWatchDirs(root string) ([]string, error) {
 	return dirs, nil
 }
 
-// ScanForPendingDirs finds all existing .git-llm-guard/pending directories.
+// ScanForPendingDirs finds all existing .llm-git-firewall/pending directories.
 func ScanForPendingDirs(root string) ([]string, error) {
 	var dirs []string
 
@@ -167,7 +167,7 @@ func ScanForPendingDirs(root string) ([]string, error) {
 	}
 
 	for _, dir := range watchDirs {
-		pending := filepath.Join(dir, ".git-llm-guard", "pending")
+		pending := filepath.Join(dir, ".llm-git-firewall", "pending")
 		if info, err := os.Stat(pending); err == nil && info.IsDir() {
 			dirs = append(dirs, pending)
 		}

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/git-llm-guard/git-llm-guard/internal/config"
+	"github.com/emiloberg/llm-git-firewall/internal/config"
 )
 
 type Guard struct {
@@ -19,7 +19,7 @@ func (g *Guard) Validate(cmd string, repoPath string) (bool, string) {
 
 	// Load and merge repo-specific rules if repoPath is provided
 	if repoPath != "" {
-		repoCfgPath := filepath.Join(repoPath, ".git-llm-guard", "config.yaml")
+		repoCfgPath := filepath.Join(repoPath, ".llm-git-firewall", "config.yaml")
 		repoCfg, err := config.LoadRepo(repoCfgPath)
 		if err == nil {
 			rules = config.MergeRules(g.GlobalRules, repoCfg.Rules)
@@ -82,7 +82,7 @@ func (g *Guard) ProcessRequest(reqFile string, repoPath string) error {
 }
 
 func (g *Guard) writeResult(reqFile string, repoPath string, cmd string, status string, detail string) error {
-	resultsDir := filepath.Join(repoPath, ".git-llm-guard", "results")
+	resultsDir := filepath.Join(repoPath, ".llm-git-firewall", "results")
 	if err := os.MkdirAll(resultsDir, 0755); err != nil {
 		return fmt.Errorf("creating results dir: %w", err)
 	}

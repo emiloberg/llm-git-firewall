@@ -16,10 +16,10 @@ platforms=(
 for platform in "${platforms[@]}"; do
   GOOS="${platform%/*}"
   GOARCH="${platform#*/}"
-  output="$OUTPUT_DIR/git-llm-guard-${GOOS}-${GOARCH}"
+  output="$OUTPUT_DIR/llm-git-firewall-${GOOS}-${GOARCH}"
 
   echo "Building $GOOS/$GOARCH..."
-  GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w" -o "$output" ./cmd/git-llm-guard
+  GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w" -o "$output" ./cmd/llm-git-firewall
 done
 
 echo "Done. Binaries in $OUTPUT_DIR/"

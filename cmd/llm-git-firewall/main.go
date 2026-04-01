@@ -10,17 +10,17 @@ import (
 
 	"path/filepath"
 
-	"github.com/git-llm-guard/git-llm-guard/internal/config"
-	"github.com/git-llm-guard/git-llm-guard/internal/guard"
-	"github.com/git-llm-guard/git-llm-guard/internal/watcher"
+	"github.com/emiloberg/llm-git-firewall/internal/config"
+	"github.com/emiloberg/llm-git-firewall/internal/guard"
+	"github.com/emiloberg/llm-git-firewall/internal/watcher"
 )
 
 func main() {
 	homeDir, _ := os.UserHomeDir()
-	defaultConfig := homeDir + "/.git-llm-guard.yaml"
+	defaultConfig := homeDir + "/.llm-git-firewall.yaml"
 
 	configPath := flag.String("config", defaultConfig, "path to config file")
-	initFlag := flag.Bool("init", false, "create default config file at ~/.git-llm-guard.yaml")
+	initFlag := flag.Bool("init", false, "create default config file at ~/.llm-git-firewall.yaml")
 	flag.Parse()
 
 	if *initFlag {
@@ -59,7 +59,7 @@ func main() {
 
 	go w.Run()
 
-	log.Println("git-llm-guard is running. Press Ctrl+C to stop.")
+	log.Println("llm-git-firewall is running. Press Ctrl+C to stop.")
 
 	for {
 		select {

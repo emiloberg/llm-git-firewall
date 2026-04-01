@@ -1,4 +1,4 @@
-# git-llm-guard
+# llm-git-firewall
 
 A lightweight daemon that acts as a gatekeeper between AI coding agents and git (and GitHub). It lets you run your favorite LLM in a VM without direct git access, while still allowing controlled git operations like pushing to feature branches.
 
@@ -8,7 +8,7 @@ The guest VM has git but no GitHub authentication. When it wants to push, it dro
 
 ## Why?
 
-Running AI agents with full git push access is risky. They could force-push to main, overwrite protected branches, or push to places they shouldn't. On GitHub this can be somewhat managed, but needs to be configured on a repository or organisation basis. That's of little help when working on many repositories. git-llm-guard solves this by:
+Running AI agents with full git push access is risky. They could force-push to main, overwrite protected branches, or push to places they shouldn't. On GitHub this can be somewhat managed, but needs to be configured on a repository or organisation basis. That's of little help when working on many repositories. llm-git-firewall solves this by:
 
 - Running on the **host** machine with GitHub credentials
 - Watching a **shared directory** for git command requests from the guest VM
@@ -16,40 +16,30 @@ Running AI agents with full git push access is risky. They could force-push to m
 
 ## Installation
 
-### Homebrew (macOS / Linux)
+### Homebrew
 
 ```
-brew tap git-llm-guard/tap
-brew install git-llm-guard
+brew tap emiloberg/tap
+brew install llm-git-firewall
 ```
 
-A default config is created automatically at `~/.git-llm-guard.yaml`. Edit the `root` field to point to your shared directory, then start the service:
+A default config is created automatically at `~/.llm-git-firewall.yaml`. Edit the `root` field to point to your shared directory, then start the service:
 
 ```
 # Edit config first
-vim ~/.git-llm-guard.yaml
+vim ~/.llm-git-firewall.yaml
 
 # Start as a background service (survives reboots)
-brew services start git-llm-guard
+brew services start llm-git-firewall
 
 # Check status
-brew services info git-llm-guard
+brew services info llm-git-firewall
 
 # View logs
-tail -f /usr/local/var/log/git-llm-guard.log
+tail -f /usr/local/var/log/llm-git-firewall.log
 
 # Stop
-brew services stop git-llm-guard
-```
-
-### Download a release
-
-Grab the latest binary for your platform from [GitHub Releases](https://github.com/git-llm-guard/git-llm-guard/releases) and place it somewhere on your PATH:
-
-```
-curl -Lo git-llm-guard https://github.com/git-llm-guard/git-llm-guard/releases/latest/download/git-llm-guard-$(uname -s)-$(uname -m)
-chmod +x git-llm-guard
-sudo mv git-llm-guard /usr/local/bin/
+brew services stop llm-git-firewall
 ```
 
 ### Or build from source (alternative)
@@ -57,20 +47,20 @@ sudo mv git-llm-guard /usr/local/bin/
 Requires Go 1.22+:
 
 ```
-go build -o git-llm-guard ./cmd/git-llm-guard
+go build -o llm-git-firewall ./cmd/llm-git-firewall
 ```
 
-### Create a default config
+When building yourself, you need to create a default config
 
 ```
-./git-llm-guard --init
+./llm-git-firewall --init
 ```
 
-This creates `~/.git-llm-guard.yaml` with sensible defaults: allows pull, fetch, and push to any branch except main/master/develop, and blocks all force-push variants.
+This creates `~/.llm-git-firewall.yaml` with sensible defaults: allows pull, fetch, and push to any branch except main/master/develop, and blocks all force-push variants.
 
 ### Edit the config
 
-Open `~/.git-llm-guard.yaml` and set `root` to the directory shared between host and guest (VM).
+Open `~/.llm-git-firewall.yaml` and set `root` to the directory shared between host and guest (VM).
 
 ```yaml
 root: /home/you/code/shared
@@ -93,10 +83,10 @@ Rules use glob patterns where `*` matches any string (including `/`). Deny rules
 
 ### Per-repo overrides
 
-Place a `config.yaml` inside a repo's `.git-llm-guard/` directory to add repo-specific rules:
+Place a `config.yaml` inside a repo's `.llm-git-firewall/` directory to add repo-specific rules:
 
 ```yaml
-# <repo>/.git-llm-guard/config.yaml
+# <repo>/.llm-git-firewall/config.yaml
 rules:
   allow:
     - "git push origin feat/*"
@@ -109,26 +99,26 @@ Repo rules are merged with global rules (both deny and allow lists are combined)
 ### Run it
 
 ```
-./git-llm-guard
+./llm-git-firewall
 ```
 
 Or with a custom config path:
 
 ```
-./git-llm-guard --config /path/to/config.yaml
+./llm-git-firewall --config /path/to/config.yaml
 ```
 
 ### Run as a systemd service
 
-Create `/etc/systemd/system/git-llm-guard.service`:
+Create `/etc/systemd/system/llm-git-firewall.service`:
 
 ```ini
 [Unit]
-Description=git-llm-guard
+Description=llm-git-firewall
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/git-llm-guard --config /home/you/.git-llm-guard.yaml
+ExecStart=/usr/local/bin/llm-git-firewall --config /home/you/.llm-git-firewall.yaml
 User=you
 Restart=on-failure
 
@@ -139,14 +129,14 @@ WantedBy=multi-user.target
 Then:
 
 ```
-sudo systemctl enable --now git-llm-guard
+sudo systemctl enable --now llm-git-firewall
 ```
 
 ## How it works
 
-The guest VM creates a request file in `<repo>/.git-llm-guard/pending/` with a timestamp filename (e.g. `2026-04-01T15-30-00.txt`) containing the git command to run.
+The guest VM creates a request file in `<repo>/.llm-git-firewall/pending/` with a timestamp filename (e.g. `2026-04-01T15-30-00.txt`) containing the git command to run.
 
-git-llm-guard detects the new file, validates the command, and moves it to `<repo>/.git-llm-guard/results/` with the outcome appended:
+llm-git-firewall detects the new file, validates the command, and moves it to `<repo>/.llm-git-firewall/results/` with the outcome appended:
 
 ```
 git push origin feat/my-feature
@@ -168,7 +158,7 @@ Possible statuses: `success`, `denied`, `fail`.
 ### Build
 
 ```
-go build -o git-llm-guard ./cmd/git-llm-guard
+go build -o llm-git-firewall ./cmd/llm-git-firewall
 ```
 
 ### Test

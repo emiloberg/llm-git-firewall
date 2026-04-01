@@ -13,7 +13,7 @@ func TestScanForPendingDirs(t *testing.T) {
 	// Create two repos, one with pending dir, one without
 	repo1 := filepath.Join(root, "org", "repo1")
 	repo2 := filepath.Join(root, "org", "repo2")
-	os.MkdirAll(filepath.Join(repo1, ".git-llm-guard", "pending"), 0755)
+	os.MkdirAll(filepath.Join(repo1, ".llm-git-firewall", "pending"), 0755)
 	os.MkdirAll(repo2, 0755)
 
 	dirs, err := ScanForPendingDirs(root)
@@ -25,7 +25,7 @@ func TestScanForPendingDirs(t *testing.T) {
 		t.Fatalf("expected 1 pending dir, got %d", len(dirs))
 	}
 
-	expected := filepath.Join(repo1, ".git-llm-guard", "pending")
+	expected := filepath.Join(repo1, ".llm-git-firewall", "pending")
 	if dirs[0] != expected {
 		t.Errorf("got %q, want %q", dirs[0], expected)
 	}
@@ -54,7 +54,7 @@ func TestScanForWatchDirs(t *testing.T) {
 func TestWatcherDetectsNewFile(t *testing.T) {
 	root := t.TempDir()
 	repoDir := filepath.Join(root, "org", "repo1")
-	pendingDir := filepath.Join(repoDir, ".git-llm-guard", "pending")
+	pendingDir := filepath.Join(repoDir, ".llm-git-firewall", "pending")
 	os.MkdirAll(pendingDir, 0755)
 
 	events := make(chan RequestEvent, 10)

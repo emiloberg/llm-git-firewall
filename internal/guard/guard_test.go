@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/git-llm-guard/git-llm-guard/internal/config"
+	"github.com/emiloberg/llm-git-firewall/internal/config"
 )
 
 func TestValidateDenyFirst(t *testing.T) {
@@ -56,7 +56,7 @@ func TestValidateDefaultDeny(t *testing.T) {
 
 func TestValidateWithRepoOverride(t *testing.T) {
 	repoDir := t.TempDir()
-	guardDir := filepath.Join(repoDir, ".git-llm-guard")
+	guardDir := filepath.Join(repoDir, ".llm-git-firewall")
 	os.MkdirAll(guardDir, 0755)
 
 	cfgContent := []byte(`rules:
@@ -103,8 +103,8 @@ func TestExecuteFail(t *testing.T) {
 
 func TestProcessRequest(t *testing.T) {
 	repoDir := t.TempDir()
-	pendingDir := filepath.Join(repoDir, ".git-llm-guard", "pending")
-	resultsDir := filepath.Join(repoDir, ".git-llm-guard", "results")
+	pendingDir := filepath.Join(repoDir, ".llm-git-firewall", "pending")
+	resultsDir := filepath.Join(repoDir, ".llm-git-firewall", "results")
 	os.MkdirAll(pendingDir, 0755)
 	os.MkdirAll(resultsDir, 0755)
 
@@ -152,8 +152,8 @@ func TestProcessRequest(t *testing.T) {
 
 func TestProcessRequestDenied(t *testing.T) {
 	repoDir := t.TempDir()
-	pendingDir := filepath.Join(repoDir, ".git-llm-guard", "pending")
-	resultsDir := filepath.Join(repoDir, ".git-llm-guard", "results")
+	pendingDir := filepath.Join(repoDir, ".llm-git-firewall", "pending")
+	resultsDir := filepath.Join(repoDir, ".llm-git-firewall", "results")
 	os.MkdirAll(pendingDir, 0755)
 	os.MkdirAll(resultsDir, 0755)
 

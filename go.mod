@@ -1,4 +1,4 @@
-module github.com/git-llm-guard/git-llm-guard
+module github.com/emiloberg/llm-git-firewall
 
 go 1.21
 

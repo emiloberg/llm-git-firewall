@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/git-llm-guard/git-llm-guard/internal/config"
-	"github.com/git-llm-guard/git-llm-guard/internal/guard"
-	"github.com/git-llm-guard/git-llm-guard/internal/watcher"
+	"github.com/emiloberg/llm-git-firewall/internal/config"
+	"github.com/emiloberg/llm-git-firewall/internal/guard"
+	"github.com/emiloberg/llm-git-firewall/internal/watcher"
 )
 
 func TestIntegrationFullFlow(t *testing.T) {
 	root := t.TempDir()
 	repoDir := filepath.Join(root, "org", "project")
-	pendingDir := filepath.Join(repoDir, ".git-llm-guard", "pending")
-	resultsDir := filepath.Join(repoDir, ".git-llm-guard", "results")
+	pendingDir := filepath.Join(repoDir, ".llm-git-firewall", "pending")
+	resultsDir := filepath.Join(repoDir, ".llm-git-firewall", "results")
 	os.MkdirAll(pendingDir, 0755)
 	os.MkdirAll(resultsDir, 0755)
 
