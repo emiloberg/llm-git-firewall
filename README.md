@@ -1,8 +1,8 @@
 # llm-git-firewall
 
-A lightweight daemon that acts as a gatekeeper between AI coding agents and git (and GitHub). It lets you run your favorite LLM in a VM without direct git access, while still allowing controlled git operations like pushing to feature branches.
+This is a lightweight daemon that acts as a gatekeeper between AI coding agents and git (and GitHub). It lets you run your favorite LLM in a VM without direct git access, while still allowing controlled git operations like pushing to feature branches.
 
-## TLDR
+This acts as a proxy for git (and Github) and only lets through allowed operations.
 
 The guest VM has git but no GitHub authentication. When it wants to push, it drops a request file in a shared folder. The host picks it up, checks the rules, and either executes or rejects it.
 
@@ -14,27 +14,48 @@ Running AI agents with full git push access is risky. They could force-push to m
 - Watching a **shared directory** for git command requests from the guest VM
 - Validating every command against configurable **allow/deny rules**
 
+## Requirements
+
+- A VM (guest) where you run your LLM
+- A shared directory between your guest and host. Typically this is where all repositories you're working on lives.
+
 ## Installation
 
 ### Homebrew
 
-```
+```sh
 brew tap emiloberg/tap
 brew install llm-git-firewall
 ```
 
-Then create a default config and edit it:
+Create and edit the config
 
-```
+```sh
 # Create default config
 llm-git-firewall --init
 
-# Edit config — set 'root' to your shared directory
+# Edit config — set 'root' to your shared directory.
+# See further down this README for config
 vim ~/.llm-git-firewall.yaml
+```
 
-# Start as a background service (survives reboots)
+#### Run it
+
+As a service (in background, survives reboot):
+
+```sh
 brew services start llm-git-firewall
+```
 
+Or as a normal CLI :
+
+```sh
+llm-git-firewall
+```
+
+If running as a service
+
+```sh
 # Check status
 brew services info llm-git-firewall
 
@@ -53,13 +74,7 @@ Requires Go 1.22+:
 go build -o llm-git-firewall ./cmd/llm-git-firewall
 ```
 
-When building yourself, you need to create a default config
-
-```
-./llm-git-firewall --init
-```
-
-This creates `~/.llm-git-firewall.yaml` with sensible defaults: allows pull, fetch, and push to any branch except main/master/develop, and blocks all force-push variants.
+Create default config as per above
 
 ### Edit the config
 
@@ -99,40 +114,29 @@ rules:
 
 Repo rules are merged with global rules (both deny and allow lists are combined).
 
-### Run it
+## Instruct your LLM
+
+Instruct your LLM on how to use this.
+
+Add this to your `AGENTS.md`/`CLAUDE.md`
 
 ```
-./llm-git-firewall
-```
+## Special git instructions
 
-Or with a custom config path:
+You have access to git, but you're not authenticated towards GitHub. You can commit and operate locally, but not fetch, pull and push as you normally would.
 
-```
-./llm-git-firewall --config /path/to/config.yaml
-```
+When you want to push or pull code upstreams there's a special routine:
 
-### Run as a systemd service
+Create a file in `<repo-root>/.llm-git-firewall/pending` with the current date/time as name and the command you want to execute as content. E.g.
 
-Create `/etc/systemd/system/llm-git-firewall.service`:
+echo "git push origin feat/1234" > $(date +%Y-%m-%dT%H-%M-%S).txt
 
-```ini
-[Unit]
-Description=llm-git-firewall
-After=network.target
+A worker will read this, check it against an allow-list and perform it. When done it will create a file, with the same filename, in `<repo-root>/.llm-git-firewall/results` containing the results of the operation.
 
-[Service]
-ExecStart=/usr/local/bin/llm-git-firewall --config /home/you/.llm-git-firewall.yaml
-User=you
-Restart=on-failure
+### Git rules
+* Never commit on main, master, staging or any other long lived branches. You will not be able to push them.
+* Always create and commit on specific feature branches.
 
-[Install]
-WantedBy=multi-user.target
-```
-
-Then:
-
-```
-sudo systemctl enable --now llm-git-firewall
 ```
 
 ## How it works
@@ -173,13 +177,3 @@ go test ./...
 # Including integration tests
 go test -tags integration ./...
 ```
-
-### Build release binaries
-
-Builds for macOS (Intel + Apple Silicon) and Linux (amd64 + arm64):
-
-```
-./scripts/build-release.sh
-```
-
-Binaries are placed in `dist/`.
