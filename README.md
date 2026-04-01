@@ -16,6 +16,19 @@ Running AI agents with full git push access is risky. They could force-push to m
 
 ## Installation
 
+### Homebrew (macOS / Linux)
+
+```
+brew tap git-llm-guard/tap
+brew install git-llm-guard
+```
+
+To run as a background service:
+
+```
+brew services start git-llm-guard
+```
+
 ### Download a release
 
 Grab the latest binary for your platform from [GitHub Releases](https://github.com/git-llm-guard/git-llm-guard/releases) and place it somewhere on your PATH:
