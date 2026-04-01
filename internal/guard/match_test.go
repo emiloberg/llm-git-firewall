@@ -30,6 +30,26 @@ func TestMatchPattern(t *testing.T) {
 
 		// Empty input
 		{"git push origin *", "", false},
+
+		// --force anywhere (pattern: *--force*)
+		{"*--force*", "git push --force origin feat/foo", true},
+		{"*--force*", "git push origin --force feat/foo", true},
+		{"*--force*", "git push origin feat/foo --force", true},
+		{"*--force*", "git push origin feat/foo", false},
+		// --force-with-lease caught by same pattern
+		{"*--force*", "git push --force-with-lease origin feat/foo", true},
+		{"*--force*", "git push origin feat/foo --force-with-lease", true},
+
+		// -f at end (pattern: * -f)
+		{"* -f", "git push origin feat/foo -f", true},
+		{"* -f", "git push -f origin feat/foo", false},
+		{"* -f", "git push origin feat/foo", false},
+
+		// -f in middle (pattern: * -f *)
+		{"* -f *", "git push -f origin feat/foo", true},
+		{"* -f *", "git push origin -f feat/foo", true},
+		{"* -f *", "git push origin feat/foo -f", false},
+		{"* -f *", "git push origin feat/foo", false},
 	}
 
 	for _, tt := range tests {
