@@ -26,7 +26,7 @@ chmod +x git-llm-guard
 sudo mv git-llm-guard /usr/local/bin/
 ```
 
-### Build from source (alternative)
+### Or build from source (alternative)
 
 Requires Go 1.22+:
 
@@ -155,12 +155,12 @@ go test ./...
 go test -tags integration ./...
 ```
 
-### Project structure
+### Build release binaries
+
+Builds for macOS (Intel + Apple Silicon) and Linux (amd64 + arm64):
 
 ```
-cmd/git-llm-guard/main.go       CLI entry point
-internal/config/                 YAML config loading and rule merging
-internal/guard/match.go          Glob pattern matching
-internal/guard/guard.go          Command validation, execution, result writing
-internal/watcher/watcher.go      Filesystem monitoring with fsnotify
+./scripts/build-release.sh
 ```
+
+Binaries are placed in `dist/`.
