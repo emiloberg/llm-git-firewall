@@ -2,7 +2,7 @@ class LlmGitFirewall < Formula
   desc "Gatekeeper daemon between AI coding agents and git"
   homepage "https://github.com/emiloberg/llm-git-firewall"
   url "https://github.com/emiloberg/llm-git-firewall/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "REPLACE_WITH_ACTUAL_SHA256"
+  sha256 "3440951da9c912a0bde9c90add49637d5787e9c8bcbe1de2770e2e0eca0440c3"
   license "MIT"
 
   depends_on "go" => :build
