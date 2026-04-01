@@ -56,7 +56,7 @@ rules:
 2. Allow rules are checked second. A match means the command is approved.
 3. No match means the command is rejected (default deny).
 4. Per-repo rules are merged with global rules: repo deny rules are added to global deny rules, repo allow rules are added to global allow rules.
-5. Glob patterns use `*` to match any string segment (e.g., `feat/*` matches `feat/my-feature`).
+5. Glob patterns use `*` to match any string including `/` (e.g., `feat/*` matches both `feat/my-feature` and `feat/sub/branch`).
 
 ## Request/Result File Format
 
