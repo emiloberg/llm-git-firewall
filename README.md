@@ -1,21 +1,34 @@
 # git-llm-guard
 
-A lightweight daemon that acts as a gatekeeper between AI coding agents and GitHub. It lets you run Claude Code (or similar tools) in a VM without direct GitHub access, while still allowing controlled git operations like pushing to feature branches.
+A lightweight daemon that acts as a gatekeeper between AI coding agents and git (and GitHub). It lets you run your favorite LLM in a VM without direct git access, while still allowing controlled git operations like pushing to feature branches.
+
+## TLDR
+
+The guest VM has git but no GitHub authentication. When it wants to push, it drops a request file in a shared folder. The host picks it up, checks the rules, and either executes or rejects it.
 
 ## Why?
 
-Running AI agents with full git push access is risky. They could force-push to main, overwrite protected branches, or push to places they shouldn't. git-llm-guard solves this by:
+Running AI agents with full git push access is risky. They could force-push to main, overwrite protected branches, or push to places they shouldn't. On GitHub this can be somewhat managed, but needs to be configured on a repository or organisation basis. That's of little help when working on many repositories. git-llm-guard solves this by:
 
 - Running on the **host** machine with GitHub credentials
 - Watching a **shared directory** for git command requests from the guest VM
 - Validating every command against configurable **allow/deny rules**
-- Writing results back so the guest can see what happened
-
-The guest VM has git but no GitHub authentication. When it wants to push, it drops a request file. The host picks it up, checks the rules, and either executes or rejects it.
 
 ## Installation
 
-### Build from source
+### Download a release
+
+Grab the latest binary for your platform from [GitHub Releases](https://github.com/git-llm-guard/git-llm-guard/releases) and place it somewhere on your PATH:
+
+```
+curl -Lo git-llm-guard https://github.com/git-llm-guard/git-llm-guard/releases/latest/download/git-llm-guard-$(uname -s)-$(uname -m)
+chmod +x git-llm-guard
+sudo mv git-llm-guard /usr/local/bin/
+```
+
+### Build from source (alternative)
+
+Requires Go 1.22+:
 
 ```
 go build -o git-llm-guard ./cmd/git-llm-guard
@@ -31,7 +44,7 @@ This creates `~/.git-llm-guard.yaml` with sensible defaults: allows pull, fetch,
 
 ### Edit the config
 
-Open `~/.git-llm-guard.yaml` and set `root` to your shared directory:
+Open `~/.git-llm-guard.yaml` and set `root` to the directory shared between host and guest (VM).
 
 ```yaml
 root: /home/you/code/shared
