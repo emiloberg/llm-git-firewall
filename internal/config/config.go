@@ -57,6 +57,9 @@ func LoadRepo(path string) (*RepoConfig, error) {
 }
 
 func MergeRules(global, repo Rules) Rules {
+	if len(repo.Allow) == 0 && len(repo.Deny) == 0 {
+		return global
+	}
 	return Rules{
 		Allow: append(append([]string{}, global.Allow...), repo.Allow...),
 		Deny:  append(append([]string{}, global.Deny...), repo.Deny...),

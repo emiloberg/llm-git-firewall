@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/emiloberg/llm-git-firewall/internal"
 	"github.com/emiloberg/llm-git-firewall/internal/config"
 )
 
@@ -17,30 +18,26 @@ type Guard struct {
 func (g *Guard) Validate(cmd string, repoPath string) (bool, string) {
 	rules := g.GlobalRules
 
-	// Load and merge repo-specific rules if repoPath is provided
 	if repoPath != "" {
-		repoCfgPath := filepath.Join(repoPath, ".llm-git-firewall", "config.yaml")
+		repoCfgPath := filepath.Join(repoPath, internal.DirName, "config.yaml")
 		repoCfg, err := config.LoadRepo(repoCfgPath)
 		if err == nil {
 			rules = config.MergeRules(g.GlobalRules, repoCfg.Rules)
 		}
 	}
 
-	// Check deny rules first
 	for _, pattern := range rules.Deny {
 		if MatchPattern(pattern, cmd) {
 			return false, fmt.Sprintf("matches deny rule %q", pattern)
 		}
 	}
 
-	// Check allow rules
 	for _, pattern := range rules.Allow {
 		if MatchPattern(pattern, cmd) {
 			return true, ""
 		}
 	}
 
-	// Default deny
 	return false, "no allow rule matched"
 }
 
@@ -82,7 +79,7 @@ func (g *Guard) ProcessRequest(reqFile string, repoPath string) error {
 }
 
 func (g *Guard) writeResult(reqFile string, repoPath string, cmd string, status string, detail string) error {
-	resultsDir := filepath.Join(repoPath, ".llm-git-firewall", "results")
+	resultsDir := filepath.Join(repoPath, internal.DirName, "results")
 	if err := os.MkdirAll(resultsDir, 0755); err != nil {
 		return fmt.Errorf("creating results dir: %w", err)
 	}
@@ -102,7 +99,6 @@ func (g *Guard) writeResult(reqFile string, repoPath string, cmd string, status 
 		return fmt.Errorf("writing result file: %w", err)
 	}
 
-	// Remove original request file from pending
 	if err := os.Remove(reqFile); err != nil {
 		return fmt.Errorf("removing request file: %w", err)
 	}

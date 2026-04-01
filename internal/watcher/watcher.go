@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/emiloberg/llm-git-firewall/internal"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -32,23 +33,15 @@ func New(root string, events chan<- RequestEvent) (*Watcher, error) {
 		fsw:    fsw,
 	}
 
-	// Watch all dirs 1-2 levels deep
 	watchDirs, err := ScanForWatchDirs(root)
 	if err != nil {
 		fsw.Close()
 		return nil, err
 	}
-	for _, dir := range watchDirs {
-		fsw.Add(dir)
-	}
 
-	// Watch existing pending dirs
-	pendingDirs, err := ScanForPendingDirs(root)
-	if err != nil {
-		fsw.Close()
-		return nil, err
-	}
-	for _, dir := range pendingDirs {
+	pendingDirs := scanForPendingDirs(watchDirs)
+
+	for _, dir := range append(watchDirs, pendingDirs...) {
 		fsw.Add(dir)
 	}
 
@@ -79,9 +72,8 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 
 	path := event.Name
 
-	// Check if this is a new file in a pending directory
 	dir := filepath.Dir(path)
-	if filepath.Base(dir) == "pending" && strings.Contains(dir, ".llm-git-firewall") {
+	if filepath.Base(dir) == "pending" && strings.Contains(dir, internal.DirName) {
 		info, err := os.Stat(path)
 		if err != nil || info.IsDir() {
 			return
@@ -94,30 +86,26 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 		return
 	}
 
-	// Check if a new directory was created — might need watching
 	info, err := os.Stat(path)
 	if err != nil || !info.IsDir() {
 		return
 	}
 
-	// If it's within 2 levels of root, watch it
 	rel, err := filepath.Rel(w.root, path)
 	if err != nil {
 		return
 	}
-	depth := len(strings.Split(rel, string(filepath.Separator)))
+	depth := strings.Count(rel, string(filepath.Separator)) + 1
 	if depth <= 2 {
 		w.fsw.Add(path)
 	}
 
-	// If this creates a .llm-git-firewall/pending dir, watch it
-	pendingDir := filepath.Join(path, ".llm-git-firewall", "pending")
+	pendingDir := filepath.Join(path, internal.DirName, "pending")
 	if info, err := os.Stat(pendingDir); err == nil && info.IsDir() {
 		w.fsw.Add(pendingDir)
 	}
 
-	// If this IS a pending dir inside .llm-git-firewall, watch it
-	if filepath.Base(path) == "pending" && strings.Contains(path, ".llm-git-firewall") {
+	if filepath.Base(path) == "pending" && strings.Contains(path, internal.DirName) {
 		w.fsw.Add(path)
 	}
 }
@@ -157,21 +145,22 @@ func ScanForWatchDirs(root string) ([]string, error) {
 	return dirs, nil
 }
 
-// ScanForPendingDirs finds all existing .llm-git-firewall/pending directories.
-func ScanForPendingDirs(root string) ([]string, error) {
+func scanForPendingDirs(watchDirs []string) []string {
 	var dirs []string
-
-	watchDirs, err := ScanForWatchDirs(root)
-	if err != nil {
-		return nil, err
-	}
-
 	for _, dir := range watchDirs {
-		pending := filepath.Join(dir, ".llm-git-firewall", "pending")
+		pending := filepath.Join(dir, internal.DirName, "pending")
 		if info, err := os.Stat(pending); err == nil && info.IsDir() {
 			dirs = append(dirs, pending)
 		}
 	}
+	return dirs
+}
 
-	return dirs, nil
+// ScanForPendingDirs finds all existing pending directories under root.
+func ScanForPendingDirs(root string) ([]string, error) {
+	watchDirs, err := ScanForWatchDirs(root)
+	if err != nil {
+		return nil, err
+	}
+	return scanForPendingDirs(watchDirs), nil
 }

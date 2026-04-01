@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if *initFlag {
-		if err := createDefaultConfig(defaultConfig); err != nil {
+		if err := createDefaultConfig(defaultConfig, homeDir); err != nil {
 			fmt.Fprintf(os.Stderr, "error creating config: %v\n", err)
 			os.Exit(1)
 		}
@@ -91,12 +91,11 @@ rules:
     - "* -f *"
 `
 
-func createDefaultConfig(path string) error {
+func createDefaultConfig(path string, homeDir string) error {
 	if _, err := os.Stat(path); err == nil {
 		return fmt.Errorf("config already exists at %s", path)
 	}
 
-	homeDir, _ := os.UserHomeDir()
 	defaultRoot := filepath.Join(homeDir, "code", "shared")
 
 	content := fmt.Sprintf(defaultConfigTemplate, defaultRoot)
